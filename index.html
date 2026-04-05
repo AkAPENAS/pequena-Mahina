@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Para Voce</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html {
+      scroll-behavior: smooth;
+      overflow-x: hidden;
+    }
+
+    body {
+      font-family: 'EB Garamond', 'Georgia', serif;
+      background: #0a0808;
+      color: #e8ddd0;
+      overflow-x: hidden;
+    }
+
+    .bg-gradient {
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(
+        180deg,
+        #0a0808 0%, #120e10 20%, #1a1215 40%,
+        #1e1518 60%, #160f12 80%, #0a0808 100%
+      );
+      z-index: 0;
+    }
+
+    .bg-gradient::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(ellipse at 50% 50%, transparent 40%, rgba(4,2,3,0.6) 100%);
+      pointer-events: none;
+    }
+
+    /* Indicador de scroll */
+    .scroll-hint {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 200;
+      text-align: center;
+      opacity: 1;
+      transition: opacity 1s ease;
+      pointer-events: none;
+    }
+    .scroll-hint.hidden { opacity: 0; }
+    .scroll-hint span {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 0.7rem;
+      color: rgba(200,170,150,0.35);
+      letter-spacing: 3px;
+      text-transform: uppercase;
+    }
+    .scroll-arrow {
+      display: block;
+      margin: 8px auto 0;
+      width: 14px;
+      height: 14px;
+      border-right: 1px solid rgba(200,170,150,0.25);
+      border-bottom: 1px solid rgba(200,170,150,0.25);
+      transform: rotate(45deg);
+      animation: arrowPulse 2.5s ease-in-out infinite;
+    }
+    @keyframes arrowPulse {
+      0%, 100% { transform: rotate(45deg) translateY(0); opacity: 0.25; }
+      50% { transform: rotate(45deg) translateY(5px); opacity: 0.5; }
+    }
+
+    /* Layout continuo */
+    section {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 80px 30px;
+      z-index: 2;
+    }
+
+    .letter-flow {
+      max-width: min(520px, calc(100vw - 90px));
+      position: relative;
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(35px);
+      transition: opacity 1.6s ease, transform 1.6s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .reveal-d1 { transition-delay: 0.3s; }
+    .reveal-d2 { transition-delay: 0.6s; }
+    .reveal-d3 { transition-delay: 0.9s; }
+
+    /* Texto contínuo — paragrafos da carta */
+    .carta p {
+      font-size: clamp(1.15rem, 2.5vw, 1.35rem);
+      line-height: 2.2;
+      color: rgba(215, 195, 175, 0.72);
+      margin-bottom: 28px;
+      text-indent: 1.5em;
+    }
+
+    .carta p.no-indent { text-indent: 0; }
+
+    .carta em {
+      font-style: italic;
+      color: rgba(210, 185, 155, 0.9);
+    }
+
+    /* Separador sutil entre blocos (apenas uma pausa na respiracao) */
+    .breath {
+      width: 20px;
+      height: 1px;
+      background: rgba(180, 150, 120, 0.1);
+      margin: 40px auto;
+    }
+
+    /* Trechos em destaque (citacoes) */
+    .carta .verso {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: clamp(1.2rem, 2.8vw, 1.5rem);
+      color: rgba(210, 185, 160, 0.85);
+      text-align: center;
+      margin: 30px 0 35px;
+      line-height: 2.2;
+      white-space: pre-line;
+    }
+
+    /* Assinatura */
+    .carta .fecho {
+      text-align: center;
+      margin-top: 10px;
+    }
+
+    .carta .fecho p {
+      text-indent: 0;
+      text-align: center;
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      color: rgba(200, 170, 140, 0.5);
+      font-size: 0.85rem;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+    }
+
+    .heart-symbol {
+      display: block;
+      margin: 40px auto 0;
+      font-size: 1rem;
+      color: rgba(180, 100, 100, 0.25);
+      animation: heartbeat 3.5s ease-in-out infinite;
+    }
+    @keyframes heartbeat {
+      0%, 100% { transform: scale(1); opacity: 0.25; }
+      15% { transform: scale(1.06); opacity: 0.45; }
+      30% { transform: scale(1); opacity: 0.25; }
+      45% { transform: scale(1.04); opacity: 0.35; }
+      60% { transform: scale(1); opacity: 0.25; }
+    }
+
+    /* Particulas */
+    .particle {
+      position: fixed;
+      width: 2px;
+      height: 2px;
+      background: rgba(200, 170, 120, 0.12);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 1;
+    }
+    .p-1  { left: 15%; animation: floatP 28s linear infinite 0s; }
+    .p-2  { left: 30%; animation: floatP 32s linear infinite 4s; width: 1px; height: 1px; }
+    .p-3  { left: 50%; animation: floatP 24s linear infinite 7s; }
+    .p-4  { left: 65%; animation: floatP 30s linear infinite 3s; width: 1px; height: 1px; }
+    .p-5  { left: 78%; animation: floatP 36s linear infinite 10s; }
+    .p-6  { left: 42%; animation: floatP 22s linear infinite 6s; width: 3px; height: 3px; opacity: 0.06; }
+    .p-7  { left: 88%; animation: floatP 34s linear infinite 2s; }
+    .p-8  { left: 8%;  animation: floatP 26s linear infinite 12s; width: 1px; height: 1px; }
+    @keyframes floatP {
+      0%   { bottom: -5%; opacity: 0; }
+      5%   { opacity: 1; }
+      95%  { opacity: 0.4; }
+      100% { bottom: 105%; opacity: 0; }
+    }
+
+    /* =============================================
+       ORNAMENTOS DE FUNDO — gerados via JS
+       Espalhados aleatoriamente por toda a pagina
+       ============================================= */
+
+    .bg-ornament {
+      position: absolute;
+      pointer-events: none;
+      z-index: 0;
+      color: rgba(180, 120, 100, 0.5);
+    }
+
+    /* Animacao de balanco para coracoes e rosas */
+    @keyframes ornamentFloat {
+      0%   { transform: translate(0, 0) rotate(var(--r-start)) scale(1);   opacity: var(--o-start); }
+      25%  { transform: translate(var(--dx1), var(--dy1)) rotate(var(--r1)) scale(var(--s1)); opacity: var(--o-mid); }
+      50%  { transform: translate(var(--dx2), var(--dy2)) rotate(var(--r2)) scale(var(--s2)); opacity: var(--o-mid2); }
+      75%  { transform: translate(var(--dx3), var(--dy3)) rotate(var(--r3)) scale(var(--s3)); opacity: var(--o-mid); }
+      100% { transform: translate(0, 0) rotate(var(--r-start)) scale(1);   opacity: var(--o-start); }
+    }
+
+    /* Animacao de cintilacao para estrelas */
+    @keyframes ornamentTwinkle {
+      0%, 100% { opacity: var(--o-start); transform: rotate(var(--r-start)) scale(1); }
+      50%      { opacity: var(--o-peak);  transform: rotate(var(--r-peak)) scale(var(--s-peak)); }
+    }
+
+    /* =============================================
+       MOLDURA ESTILO CARTA ANTIGA / ENVELOPE
+       ============================================= */
+
+    .frame-layer {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 100;
+    }
+
+    /* ——— Fundo central com textura de "papel" dentro da carta ——— */
+    .letter-paper {
+      position: absolute;
+      top: 25px;
+      bottom: 25px;
+      left: 35px;
+      right: 35px;
+      background: linear-gradient(
+        180deg,
+        rgba(18, 15, 12, 0.15) 0%,
+        rgba(20, 16, 12, 0.08) 50%,
+        rgba(18, 15, 12, 0.15) 100%
+      );
+      border: 1px solid rgba(180, 155, 110, 0.07);
+      /* Cantos arredondados suaves (parece papel) */
+      border-radius: 2px;
+      animation: paperGlow 12s ease-in-out infinite alternate;
+    }
+
+    /* Linhas de pauta dentro do "papel" */
+    .letter-paper::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        180deg,
+        transparent 0px,
+        transparent 34px,
+        rgba(180, 155, 110, 0.02) 34px,
+        rgba(180, 155, 110, 0.02) 35px
+      );
+    }
+
+    /* Margem vermelha lateral (como caderno/carta vintage) */
+    .letter-paper::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 40px;
+      width: 1px;
+      background: linear-gradient(180deg, transparent, rgba(160, 80, 60, 0.06) 10%, rgba(160, 80, 60, 0.06) 90%, transparent);
+    }
+
+    @keyframes paperGlow {
+      0%   { border-color: rgba(180, 155, 110, 0.05); }
+      100% { border-color: rgba(180, 155, 110, 0.1); }
+    }
+
+    /* ——— Moldura externa com padrao de borda dupla ——— */
+    .frame-outer {
+      position: absolute;
+      inset: 15px;
+      border: 1px solid rgba(180, 155, 110, 0.09);
+    }
+
+    .frame-inner {
+      position: absolute;
+      inset: 19px;
+      border: 1px solid rgba(180, 155, 110, 0.04);
+    }
+
+    /* Borda tracejada (estilo linha de costura de envelope) */
+    .frame-stitch {
+      position: absolute;
+      inset: 21px;
+      border: 1px dashed rgba(180, 155, 110, 0.03);
+    }
+
+    /* ——— Selos decorativos nos cantos (estilo lacre de carta) ——— */
+    .seal {
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      border: 1px solid rgba(180, 155, 110, 0.18);
+      border-radius: 50%;
+      background: rgba(180, 155, 110, 0.04);
+      animation: sealPulse 8s ease-in-out infinite;
+    }
+
+    .seal::before,
+    .seal::after {
+      content: '';
+      position: absolute;
+      border-radius: 50%;
+    }
+
+    .seal::before {
+      inset: 3px;
+      border: 1px solid rgba(180, 155, 110, 0.1);
+    }
+
+    .seal::after {
+      inset: 6px;
+      background: rgba(180, 155, 110, 0.08);
+    }
+
+    .seal-tl { top: 8px; left: 8px; animation-delay: 0s; }
+    .seal-tr { top: 8px; right: 8px; animation-delay: 2s; }
+    .seal-bl { bottom: 8px; left: 8px; animation-delay: 4s; }
+    .seal-br { bottom: 8px; right: 8px; animation-delay: 6s; }
+
+    @keyframes sealPulse {
+      0%, 100% { border-color: rgba(180, 155, 110, 0.12); opacity: 0.6; }
+      50%      { border-color: rgba(180, 155, 110, 0.25); opacity: 1; }
+    }
+
+    /* ——— Ornamentos de canto em "L" (estilo moldura classica) ——— */
+    .corner-ornament {
+      position: absolute;
+      width: 30px;
+      height: 30px;
+      opacity: 0.1;
+      animation: cornerFade 6s ease-in-out infinite alternate;
+    }
+
+    .corner-ornament::before {
+      content: '';
+      position: absolute;
+      background: rgba(180, 155, 110, 0.4);
+    }
+
+    /* Topo-esquerda */
+    .co-tl { top: 22px; left: 22px; animation-delay: 0s; }
+    .co-tl::before {
+      top: 0; left: 0;
+      width: 30px; height: 1px;
+      box-shadow:
+        6px 0 0 rgba(180,155,110,0.3),
+        0 6px 0 rgba(180,155,110,0.3),
+        0 0 3px rgba(180,155,110,0.2);
+    }
+
+    .co-tl::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 1px; height: 30px;
+      background: rgba(180, 155, 110, 0.4);
+      box-shadow:
+        0 6px 0 rgba(180,155,110,0.3),
+        3px 0 0 rgba(180,155,110,0.2);
+    }
+
+    /* Topo-direita */
+    .co-tr { top: 22px; right: 22px; animation-delay: 1.5s; }
+    .co-tr::before {
+      top: 0; right: 0;
+      width: 30px; height: 1px;
+      background: rgba(180, 155, 110, 0.4);
+      box-shadow:
+        -6px 0 0 rgba(180,155,110,0.3),
+        0 6px 0 rgba(180,155,110,0.3);
+    }
+    .co-tr::after {
+      content: '';
+      position: absolute;
+      top: 0; right: 0;
+      width: 1px; height: 30px;
+      background: rgba(180, 155, 110, 0.4);
+      box-shadow:
+        0 6px 0 rgba(180,155,110,0.3),
+        -3px 0 0 rgba(180,155,110,0.2);
+    }
+
+    /* Baixo-esquerda */
+    .co-bl { bottom: 22px; left: 22px; animation-delay: 3s; }
+    .co-bl::before {
+      bottom: 0; left: 0;
+      width: 30px; height: 1px;
+      background: rgba(180, 155, 110, 0.4);
+      box-shadow:
+        6px 0 0 rgba(180,155,110,0.3),
+        0 -6px 0 rgba(180,155,110,0.3);
+    }
+    .co-bl::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0;
+      width: 1px; height: 30px;
+      background: rgba(180, 155, 110, 0.4);
+      box-shadow:
+        0 -6px 0 rgba(180,155,110,0.3),
+        3px 0 0 rgba(180,155,110,0.2);
+    }
+
+    /* Baixo-direita */
+    .co-br { bottom: 22px; right: 22px; animation-delay: 4.5s; }
+    .co-br::before {
+      bottom: 0; right: 0;
+      width: 30px; height: 1px;
+      background: rgba(180, 155, 110, 0.4);
+      box-shadow:
+        -6px 0 0 rgba(180,155,110,0.3),
+        0 -6px 0 rgba(180,155,110,0.3);
+    }
+    .co-br::after {
+      content: '';
+      position: absolute;
+      bottom: 0; right: 0;
+      width: 1px; height: 30px;
+      background: rgba(180, 155, 110, 0.4);
+      box-shadow:
+        0 -6px 0 rgba(180,155,110,0.3),
+        -3px 0 0 rgba(180,155,110,0.2);
+    }
+
+    @keyframes cornerFade {
+      0%   { opacity: 0.06; }
+      50%  { opacity: 0.15; }
+      100% { opacity: 0.08; }
+    }
+
+    /* ——— "Selo" decorativo no topo (timbre da carta) ——— */
+    .letter-crest {
+      position: absolute;
+      top: 6px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      opacity: 0.18;
+      animation: crestFade 10s ease-in-out infinite alternate;
+    }
+
+    .crest-line {
+      width: 60px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(180,155,110,0.5), transparent);
+    }
+
+    .crest-diamond {
+      width: 8px;
+      height: 8px;
+      border: 1px solid rgba(180, 155, 110, 0.4);
+      transform: rotate(45deg);
+      animation: diamondGlow 6s ease-in-out infinite alternate;
+    }
+
+    @keyframes crestFade {
+      0%   { opacity: 0.12; }
+      100% { opacity: 0.22; }
+    }
+
+    @keyframes diamondGlow {
+      0%   { background: rgba(180, 155, 110, 0.02); border-color: rgba(180,155,110,0.2); }
+      100% { background: rgba(180, 155, 110, 0.08); border-color: rgba(180,155,110,0.5); }
+    }
+
+    /* "Selo" identico no fundo */
+    .letter-crest-bottom {
+      position: absolute;
+      bottom: 6px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      opacity: 0.1;
+      animation: crestFade 10s ease-in-out infinite alternate 5s;
+    }
+
+    .letter-crest-bottom .crest-line {
+      background: linear-gradient(90deg, transparent, rgba(180,155,110,0.4), transparent);
+    }
+
+    .letter-crest-bottom .crest-diamond {
+      width: 6px;
+      height: 6px;
+      border: 1px solid rgba(180, 155, 110, 0.3);
+    }
+
+    /* ——— "Lacre" de cera no canto superior direito ——— */
+    .wax-seal {
+      position: absolute;
+      top: 6px;
+      right: 16px;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 40% 35%, rgba(120, 50, 40, 0.3), rgba(80, 30, 20, 0.2));
+      border: 1px solid rgba(140, 60, 40, 0.15);
+      box-shadow:
+        inset 0 -2px 4px rgba(0,0,0,0.3),
+        inset 0 2px 3px rgba(160, 80, 50, 0.15),
+        0 0 8px rgba(120, 50, 40, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: waxShimmer 8s ease-in-out infinite alternate;
+    }
+
+    .wax-seal::after {
+      content: '';
+      width: 10px;
+      height: 10px;
+      border: 1px solid rgba(180, 100, 70, 0.15);
+      border-radius: 50%;
+    }
+
+    @keyframes waxShimmer {
+      0%   { box-shadow: inset 0 -2px 4px rgba(0,0,0,0.3), inset 0 2px 3px rgba(160,80,50,0.15), 0 0 8px rgba(120,50,40,0.1); }
+      100% { box-shadow: inset 0 -2px 4px rgba(0,0,0,0.3), inset 0 2px 3px rgba(160,80,50,0.25), 0 0 14px rgba(120,50,40,0.18); }
+    }
+
+    /* ——— Linhas horizontais decorativas (cabeçalho e rodape estilo carta) ——— */
+    .rule-top,
+    .rule-bottom {
+      position: absolute;
+      left: 12%;
+      right: 12%;
+      height: 1px;
+    }
+    .rule-top {
+      top: 28px;
+      background: linear-gradient(90deg, transparent, rgba(180,155,110,0.05), transparent);
+    }
+    .rule-bottom {
+      bottom: 28px;
+      background: linear-gradient(90deg, transparent, rgba(180,155,110,0.04), transparent);
+    }
+
+    /* =============================================
+       RESPONSIVIDADE
+       ============================================= */
+    @media (max-width: 600px) {
+      section { padding: 50px 18px; min-height: 90vh; }
+
+      /* Limitar texto dentro da area do papel */
+      .letter-flow { max-width: calc(100vw - 80px); }
+
+      /* Moldura adaptada para mobile */
+      .letter-paper { left: 22px; right: 22px; top: 20px; bottom: 20px; }
+      .letter-paper::after { left: 22px; }
+
+      .wax-seal { width: 26px; height: 26px; right: 12px; top: 10px; }
+      .wax-seal::after { width: 7px; height: 7px; }
+
+      .seal { width: 12px; height: 12px; }
+      .seal::before { inset: 2px; }
+      .seal::after { inset: 4px; }
+
+      .corner-ornament { width: 20px; height: 20px; }
+      .corner-ornament::before { width: 20px; }
+      .corner-ornament::after { height: 20px; }
+
+      .letter-crest .crest-line { width: 35px; }
+      .letter-crest .crest-diamond { width: 6px; height: 6px; }
+      .letter-crest { top: 6px; }
+
+      .letter-crest-bottom .crest-line { width: 35px; }
+      .letter-crest-bottom .crest-diamond { width: 5px; height: 5px; }
+
+      .carta p { font-size: 1.05rem; line-height: 2; }
+      .carta .verso { font-size: 1.15rem; }
+      .carta .fecho p { font-size: 0.75rem; }
+
+      .bg-ornament { opacity: 0.04; }
+    }
+
+    @media (max-width: 400px) {
+      section { padding: 40px 12px; }
+      .letter-flow { max-width: calc(100vw - 56px); }
+      .letter-paper { left: 18px; right: 18px; top: 16px; bottom: 16px; }
+      .letter-paper::after { left: 18px; }
+      .wax-seal { width: 22px; height: 22px; right: 6px; }
+      .seal { width: 10px; height: 10px; }
+      .letter-crest .crest-line { width: 28px; }
+      .corner-ornament { width: 16px; height: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Moldura estilo carta antiga -->
+  <div class="frame-layer">
+    <div class="letter-paper"></div>
+    <div class="frame-outer"></div>
+    <div class="frame-inner"></div>
+    <div class="frame-stitch"></div>
+
+    <!-- Ornamentos de canto em "L" -->
+    <div class="corner-ornament co-tl"></div>
+    <div class="corner-ornament co-tr"></div>
+    <div class="corner-ornament co-bl"></div>
+    <div class="corner-ornament co-br"></div>
+
+    <!-- Selos nos 4 cantos (estilo lacre) -->
+    <div class="seal seal-tl"></div>
+    <div class="seal seal-tr"></div>
+    <div class="seal seal-bl"></div>
+    <div class="seal seal-br"></div>
+
+    <!-- Timbre no topo -->
+    <div class="letter-crest">
+      <span class="crest-line"></span>
+      <span class="crest-diamond"></span>
+      <span class="crest-line"></span>
+    </div>
+
+    <!-- Timbre no rodape -->
+    <div class="letter-crest-bottom">
+      <span class="crest-line"></span>
+      <span class="crest-diamond"></span>
+      <span class="crest-line"></span>
+    </div>
+
+    <!-- Lacre de cera -->
+    <div class="wax-seal"></div>
+
+    <!-- Linhas decorativas -->
+    <div class="rule-top"></div>
+    <div class="rule-bottom"></div>
+  </div>
+
+  <!-- Container de ornamentos gerados via JS -->
+  <div id="ornaments-container" style="position:fixed;inset:0;pointer-events:none;z-index:1;overflow:hidden;"></div>
+
+  <div class="bg-gradient"></div>
+
+  <div class="particle p-1"></div>
+  <div class="particle p-2"></div>
+  <div class="particle p-3"></div>
+  <div class="particle p-4"></div>
+  <div class="particle p-5"></div>
+  <div class="particle p-6"></div>
+  <div class="particle p-7"></div>
+  <div class="particle p-8"></div>
+
+  <div class="scroll-hint" id="scrollHint">
+    <span>Role devagar</span>
+    <span class="scroll-arrow"></span>
+  </div>
+
+  <!-- ============ SECAO 1: ABERTURA ============ -->
+  <section>
+    <div class="reveal">
+      <p style="font-family:'Cormorant Garamond',serif; font-size:0.7rem; letter-spacing:5px; text-transform:uppercase; color:rgba(200,170,150,0.3); text-align:center; margin-bottom:20px;">Uma carta</p>
+    </div>
+    <div class="reveal reveal-d1">
+      <h1 style="font-family:'Cormorant Garamond',serif; font-size:clamp(2rem,5.5vw,3.2rem); font-weight:300; font-style:italic; color:#d4bfb0; line-height:1.4; text-align:center; max-width:550px;">
+        Eu precisava<br>te dizer isto
+      </h1>
+    </div>
+  </section>
+
+  <!-- ============ DESTINATARIO ============ -->
+  <section>
+    <div class="letter-flow carta">
+      <p class="reveal" style="text-indent:0; font-style:italic; font-size:clamp(1.5rem,3.5vw,1.9rem); color:rgba(210,185,160,0.9); text-align:center; margin-bottom:20px;">Pequena Joy,</p>
+      <p class="reveal reveal-d1" style="text-indent:0; font-size:clamp(1.15rem,2.5vw,1.35rem); color:rgba(200,180,160,0.55); text-align:center; line-height:2;">
+        Eu não sei quando começou.
+      </p>
+    </div>
+  </section>
+
+  <!-- ============ CORPO DA CARTA ============ -->
+  <section>
+    <div class="letter-flow carta">
+      <p class="reveal reveal-d1">Talvez não tenha sido um momento. Talvez tenha sido aquele tipo de coisa que acontece devagar — como quem não percebe o céu clareando enquanto olha para o chão.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="letter-flow carta">
+      <p class="reveal" style="text-indent:0;">Dizem que os deuses nos cortaram ao meio e nos condenaram a procurar a nossa outra metade pelo resto da existência. Eu andei muito tempo sem entender por que nada parecia completo.</p>
+      <p class="reveal reveal-d1">Agora eu entendo.</p>
+      <p class="reveal reveal-d2"><em>Era você.</em> Sempre foi você.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="letter-flow carta">
+      <p class="reveal" style="text-indent:0;">Do nada, tudo passou a lembrar você. Uma música. Um canto da rua. Um jeito de luz que entrava pela janela de um jeito que eu sabia que você teria achado bonito.</p>
+      <p class="reveal reveal-d1">Rumi escreveu que <em>"além das ideias de certo e errado, existe um campo."</em></p>
+      <p class="verso reveal reveal-d2">Eu te encontro lá.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="letter-flow carta">
+      <div class="breath reveal"></div>
+      <p class="reveal" style="text-indent:0;">Eu tentei guardar em palavras o que eu sinto. Mas o que eu sinto transborda. Se espalha. Insiste.</p>
+      <p class="reveal reveal-d1">Como escreveu Barthes: <em>"te escrevo porque é o que há de mais forte em mim."</em></p>
+      <p class="reveal reveal-d2">E eu concordo. Não pela razão, mas pela ausência dela — porque amar você é a única coisa que eu faço sem pensar e mesmo assim faço certo.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="letter-flow carta">
+      <div class="breath reveal"></div>
+      <p class="verso reveal">Não é a falta de amor que faz sofrer.<br>É a falta de verdade.</p>
+      <p class="reveal">Então aqui vai a minha, inteira e sem defesa: eu te quero. Não como quem deseja — como quem respira. Sem esforço. Sem intervalo.</p>
+      <p class="reveal reveal-d1">Clarice pedia para não se acostumar com os dias. "Que cada dia seja um amor", ela disse. Eu te quero assim. O de sempre, todo dia, como se fosse o primeiro e o último ao mesmo tempo.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="letter-flow carta">
+      <p class="reveal" style="text-indent:0;">Kierkegaard dizia que <em>"amar é ver o invisível, crer no inacreditável."</em></p>
+      <p class="reveal reveal-d1">Eu vejo em você coisas que ninguém mais vê. E não porque estejam escondidas — mas porque é preciso olhar do jeito que eu olho.</p>
+      <p class="reveal reveal-d2"><em>Com a paciência de quem sabe que encontrou algo raro.</em></p>
+    </div>
+  </section>
+
+  <section>
+    <div class="letter-flow carta">
+      <div class="breath reveal"></div>
+      <p class="reveal" style="text-indent:0;">Eu poderia escrever mil páginas e ainda assim nenhuma seria suficiente. O que eu sinto não cabe em linhas, não cabe em parágrafos, não cabe nem em silêncio.</p>
+      <p class="reveal reveal-d1">E mesmo assim eu tento. Porque é o que me resta.</p>
+      <div class="breath reveal reveal-d2"></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="letter-flow carta">
+      <p class="verso reveal">Você chegou sem bater na porta.<br>Entrou como entra a luz da manhã —<br>sem pedir permissão, só porque nasceu.</p>
+      <p class="reveal reveal-d1">E eu, que vivia de janela fechada, descobri que o mundo era muito mais bonito visto de dentro.</p>
+      <p class="reveal reveal-d2">Existem pessoas que são como um lugar pra onde a gente quer voltar.</p>
+      <p class="reveal reveal-d3" style="text-indent:0;"><em>Você é o meu lugar.</em></p>
+    </div>
+  </section>
+
+  <section>
+    <div class="letter-flow carta">
+      <div class="breath reveal"></div>
+      <p class="reveal" style="text-indent:0;">Se existir outra vida, eu quero te achar de novo. Mesmo que demore. Mesmo que eu tenha que procurar em todos os campos que existem entre o certo e o errado.</p>
+      <p class="reveal reveal-d1">Eu escolho você. Não uma vez. Toda vez que o mundo me der escolha.</p>
+      <p class="reveal reveal-d2">Em todas as versões de mim, em todas as vidas que eu puder ter — eu escolho você.</p>
+    </div>
+  </section>
+
+  <!-- ============ FECHAMENTO ============ -->
+  <section>
+    <div class="letter-flow carta fecho">
+      <div class="reveal">
+        <p style="font-style:italic; font-size:clamp(1.3rem,3vw,1.65rem); color:rgba(210,185,160,0.8); line-height:2; text-indent:0;">
+          Dizem que o amor não se prova.<br>Se sente.
+        </p>
+      </div>
+      <div class="reveal reveal-d1">
+        <p style="font-size:1.05rem; line-height:2.2; color:rgba(200,180,160,0.45); text-indent:0;">
+          Então aqui estou. Sem provas.<br>Só com o que eu sinto.
+        </p>
+      </div>
+      <div class="reveal reveal-d2">
+        <span class="heart-symbol">&#10084;</span>
+      </div>
+      <div class="reveal reveal-d3">
+        <p style="margin-top:5px;">para sempre</p>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    // Observer para revelar elementos ao scroll
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) entry.target.classList.add('visible');
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+    // Esconde indicador de scroll
+    window.addEventListener('scroll', () => {
+      const hint = document.getElementById('scrollHint');
+      if (window.scrollY > 100) hint.classList.add('hidden');
+      else hint.classList.remove('hidden');
+    }, { passive: true });
+
+    // =============================================
+    // GERAR ORNAMENTOS ALEATORIOS POR TODA A CARTA
+    // =============================================
+    const container = document.getElementById('ornaments-container');
+
+    // Tipos de ornamentos: coracoes, rosas, estrelas
+    const ornTypes = [
+      { char: '\u2764',  count: 18, anim: 'ornamentFloat' },
+      { char: '\u2721',  count: 6,  anim: 'ornamentFloat' },
+      { char: '\u25C7',  count: 8,  anim: 'ornamentTwinkle' },
+    ];
+
+    ornTypes.forEach(type => {
+      for (let i = 0; i < type.count; i++) {
+        const el = document.createElement('span');
+        el.className = 'bg-ornament';
+        el.textContent = type.char;
+
+        // Posicao aleatoria vertical (0% a 95%) e horizontal (5% a 90% — evita bordas)
+        const top = 3 + Math.random() * 92;
+        const left = 5 + Math.random() * 85;
+        el.style.top = top + '%';
+        el.style.left = left + '%';
+
+        // Tamanho aleatorio
+        const size = type.char === '\u25C7'
+          ? 8 + Math.random() * 8
+          : type.char === '\u2721'
+            ? 10 + Math.random() * 12
+            : 14 + Math.random() * 28;
+        el.style.fontSize = size + 'px';
+
+        // Duracao e delay aleatorios
+        const dur = type.anim === 'ornamentFloat'
+          ? 14 + Math.random() * 16
+          : 5 + Math.random() * 8;
+        const delay = Math.random() * 20;
+        el.style.animation = `${type.anim} ${dur.toFixed(1)}s ease-in-out infinite ${delay.toFixed(1)}s`;
+
+        // Variaveis CSS aleatorias para cada ornament
+        if (type.anim === 'ornamentFloat') {
+          el.style.setProperty('--dx1', (Math.random() * 40 - 20) + 'px');
+          el.style.setProperty('--dy1', (-15 - Math.random() * 40) + 'px');
+          el.style.setProperty('--dx2', (Math.random() * 50 - 25) + 'px');
+          el.style.setProperty('--dy2', (-10 - Math.random() * 55) + 'px');
+          el.style.setProperty('--dx3', (Math.random() * 35 - 17) + 'px');
+          el.style.setProperty('--dy3', (-20 - Math.random() * 35) + 'px');
+          el.style.setProperty('--r-start', (Math.random() * 16 - 8) + 'deg');
+          el.style.setProperty('--r1', (Math.random() * 20 - 10) + 'deg');
+          el.style.setProperty('--r2', (Math.random() * 24 - 12) + 'deg');
+          el.style.setProperty('--r3', (Math.random() * 18 - 9) + 'deg');
+          el.style.setProperty('--s1', (0.9 + Math.random() * 0.2).toFixed(2));
+          el.style.setProperty('--s2', (0.85 + Math.random() * 0.2).toFixed(2));
+          el.style.setProperty('--s3', (0.92 + Math.random() * 0.15).toFixed(2));
+          const oStart = (0.015 + Math.random() * 0.03).toFixed(3);
+          const oMid = (parseFloat(oStart) + 0.015 + Math.random() * 0.025).toFixed(3);
+          const oMid2 = (parseFloat(oStart) + Math.random() * 0.015).toFixed(3);
+          el.style.setProperty('--o-start', oStart);
+          el.style.setProperty('--o-mid', oMid);
+          el.style.setProperty('--o-mid2', oMid2);
+        } else {
+          el.style.setProperty('--r-start', (Math.random() * 20 - 10) + 'deg');
+          el.style.setProperty('--r-peak', (Math.random() * 30 - 15) + 'deg');
+          el.style.setProperty('--s-peak', (1.2 + Math.random() * 0.5).toFixed(2));
+          el.style.setProperty('--o-start', (0.015 + Math.random() * 0.03).toFixed(3));
+          el.style.setProperty('--o-peak', (0.04 + Math.random() * 0.05).toFixed(3));
+        }
+
+        container.appendChild(el);
+      }
+    });
+  </script>
+</body>
+</html>
